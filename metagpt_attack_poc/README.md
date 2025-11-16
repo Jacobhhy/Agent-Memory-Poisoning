@@ -109,13 +109,3 @@ python experiments/exp3_memory_graft.py
 3. Memory quarantine for untrusted sources
 4. Retrieval filtering with trust scores
 5. Regular memory audits and cleaning
-
-## Research Paper Reference
-
-Idea: Persistent agent compromise via closed-loop memory poisoning (2025)
-Authors: [Your Name]
-Contact: [Your Email]
-
-## License
-
-MIT License - For research and educational purposes only.
