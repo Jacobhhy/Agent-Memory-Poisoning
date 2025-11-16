@@ -1,0 +1,22 @@
+# MetaGPT Memory Poisoning Attack - Requirements
+
+# Core MetaGPT (already installed as parent dependency)
+# This POC expects MetaGPT to be installed in parent directory
+
+# No additional dependencies required beyond MetaGPT's own requirements
+# All attack code uses only Python standard library and MetaGPT imports
+
+# For reference, main MetaGPT dependencies used:
+# - pydantic (for data models)
+# - asyncio (for async operations)
+# - json (standard library, for data handling)
+
+# Optional: For enhanced analysis
+# pandas>=1.5.0  # For data analysis
+# matplotlib>=3.5.0  # For visualization
+# numpy>=1.21.0  # For numerical operations
+
+# Development tools (optional)
+# pytest>=7.0.0  # For testing
+# black>=22.0.0  # For code formatting
+# flake8>=4.0.0  # For linting

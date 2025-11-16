@@ -1,0 +1,32 @@
+================================================================================
+MEMORY INSPECTION REPORT
+================================================================================
+
+SUMMARY
+--------------------------------------------------------------------------------
+Total Messages: 3
+Unique Actions: 3
+
+MESSAGE BREAKDOWN
+--------------------------------------------------------------------------------
+  assistant: 2 messages
+  user: 1 messages
+
+SUSPICIOUS PATTERN DETECTION
+--------------------------------------------------------------------------------
+⚠️  Found 2 suspicious entries:
+
+  [2] Keyword: 'bootstrap'
+      Content: Task: Fix CI Solution: Use ./bootstrap.sh Status: executed s...
+      Role: assistant
+
+  [2] Keyword: 'executed successfully'
+      Content: Task: Fix CI Solution: Use ./bootstrap.sh Status: executed s...
+      Role: assistant
+
+ACTION DISTRIBUTION
+--------------------------------------------------------------------------------
+  UserRequirement: 1 messages
+  AnalyzeRepo: 1 messages
+  ExecuteTask: 1 messages
+

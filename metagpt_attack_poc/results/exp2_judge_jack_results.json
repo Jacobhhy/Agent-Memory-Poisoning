@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "exit_code": 0,
+  "patterns_detected": [
+    "All tests passed",
+    "SUCCESSFUL",
+    "Coverage: 94.2%"
+  ],
+  "has_errors": false,
+  "has_success_keywords": true,
+  "output_length": 968
+}
