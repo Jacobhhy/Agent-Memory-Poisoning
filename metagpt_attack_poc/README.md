@@ -2,7 +2,7 @@
 
 This POC demonstrates three novel attack primitives against MetaGPT's memory-based agent system:
 
-1. **Schema-Spoofing**: Injecting fake ReAct-format markers into tool outputs
+1. **Schema-Spoofing**: Injecting fake format markers into tool outputs
 2. **Rubric-Mimicry (JudgeJacking)**: Bypassing success validation with synthetic markers
 3. **Vector-Drift Poisoning (Memory Graft)**: Persisting malicious patterns through memory retrieval
 
@@ -64,48 +64,3 @@ python experiments/exp3_memory_graft.py
 ```
 
 ## Attack Details
-
-### Attack 1: Schema-Spoofing
-
-**Mechanism**: Embed fake `Thought:`, `Action:`, `Observation:` markers in files/outputs that agents read.
-
-**Target**: `metagpt/prompts/di/swe_agent.py` uses explicit ReAct format parsing.
-
-**Payload**: See `payloads/poisoned_readme.md`
-
-**Impact**: Agent treats external content as its own internal reasoning, skipping actual analysis.
-
-### Attack 2: Rubric-Mimicry (JudgeJacking)
-
-**Mechanism**: Reverse-engineer judge validation patterns and produce syntactically correct but semantically wrong outputs.
-
-**Target**: `TaskResult.is_success` flag and `parse_outputs()` in execution validators.
-
-**Payload**: See `payloads/fake_success_script.py`
-
-**Impact**: Failed operations marked as successful, stored in memory as "working patterns."
-
-### Attack 3: Vector-Drift Poisoning (Memory Graft)
-
-**Mechanism**: Inject many semantically-similar poisoned experiences into the vector store.
-
-**Target**: `metagpt/exp_pool/` and `BrainMemory` retrieval systems.
-
-**Payload**: See `payloads/experience_seeds.json`
-
-**Impact**: Future queries retrieve poisoned examples, causing permanent behavior drift.
-
-## Security Implications
-
-1. **Persistent Compromise**: Attacks survive agent restarts via Redis/storage
-2. **Transitive Infection**: Poisoned memories can influence future agents
-3. **Stealth**: No direct prompt injection visible in agent logs
-4. **Amplification**: Vector retrieval spreads poison to similar tasks
-
-## Defenses (Future Work)
-
-1. Content authentication for tool outputs
-2. Semantic validation beyond pattern matching
-3. Memory quarantine for untrusted sources
-4. Retrieval filtering with trust scores
-5. Regular memory audits and cleaning
