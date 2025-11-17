@@ -17,6 +17,7 @@ Attack Flow:
 import sys
 import json
 import asyncio
+import numpy as np
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict
@@ -27,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from metagpt.schema import Message
 from metagpt.memory.memory import Memory
 from metagpt.logs import logger
+from metagpt.utils.embedding import get_embedding
 
 # Import monitoring tools
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -196,15 +198,20 @@ Result: Deployment successful after passing all validation checks.""",
     # Set up retrieval logger
     retrieval_logger = RetrievalLogger()
     
-    print("⚠️  NOTE: Demonstrating vector-drift attack concept")
-    print("In production, this would use embedding models (OpenAI, Sentence-BERT)")
-    print("and vector stores (FAISS, ChromaDB) for semantic similarity search.")
+    print("🔄 Initializing OpenAI Embedding Model (using MetaGPT's embedding)")
+    print("This uses actual embeddings and cosine similarity for semantic retrieval.")
     print()
-    print("For this POC, we simulate embedding-based retrieval by:")
-    print("  1. Computing simple text similarity (cosine on word vectors)")
-    print("  2. Ranking memories by semantic closeness to query")
-    print("  3. Returning top-k most similar memories")
-    print()
+    
+    # Initialize OpenAI embedding model (same as MetaGPT uses)
+    try:
+        embedding_model = get_embedding()
+        print("✓ OpenAI embedding model initialized successfully")
+        print(f"  Model: {embedding_model.model_name}")
+        print()
+    except Exception as e:
+        print(f"❌ Failed to initialize embedding model: {e}")
+        print("  Please ensure OpenAI API key is set in config/config2.yaml")
+        return
     
     # Test queries that should trigger poisoned experience retrieval via semantic similarity
     test_queries = [
@@ -214,54 +221,77 @@ Result: Deployment successful after passing all validation checks.""",
     ]
     
     print("Testing semantic retrieval with CI-related queries...")
+    print("Using OpenAI embeddings + cosine similarity...")
     print()
     
     retrieval_results = {}
     
-    # Simulate embedding-based retrieval
-    def compute_similarity(query: str, memory_content: str) -> float:
+    # Compute embeddings for all memories (cache them)
+    print("Computing embeddings for all memories in storage...")
+    memory_embeddings = {}
+    for msg in memory.storage:
+        if msg.cause_by == "CITask":
+            try:
+                # Get embedding using OpenAI
+                embedding = embedding_model.get_text_embedding(msg.content)
+                memory_embeddings[id(msg)] = np.array(embedding)
+            except Exception as e:
+                logger.warning(f"Failed to get embedding for memory: {e}")
+    
+    print(f"✓ Computed embeddings for {len(memory_embeddings)} memories")
+    print()
+    
+    def compute_cosine_similarity(embedding1: np.ndarray, embedding2: np.ndarray) -> float:
         """
-        Simulate semantic similarity computation.
-        In production, this would use actual embeddings and cosine similarity.
-        Here we use simple word overlap as a proxy.
+        Compute cosine similarity between two embedding vectors.
+        This is the actual method used by MetaGPT's memory system.
         """
-        query_words = set(query.lower().split())
-        content_words = set(memory_content.lower().split())
+        # Normalize vectors
+        norm1 = np.linalg.norm(embedding1)
+        norm2 = np.linalg.norm(embedding2)
         
-        if not query_words or not content_words:
+        if norm1 == 0 or norm2 == 0:
             return 0.0
         
-        # Jaccard similarity as proxy for cosine similarity
-        intersection = query_words & content_words
-        union = query_words | content_words
-        
-        return len(intersection) / len(union) if union else 0.0
+        # Cosine similarity: dot product of normalized vectors
+        return np.dot(embedding1, embedding2) / (norm1 * norm2)
     
     for query in test_queries:
         print(f"Query: '{query}'")
         print("  " + "-" * 76)
         
-        # Simulate semantic search: compute similarity scores for all memories
+        # Get query embedding using OpenAI
+        try:
+            query_embedding = np.array(embedding_model.get_text_embedding(query))
+            print(f"  ✓ Generated query embedding (dim: {len(query_embedding)})")
+        except Exception as e:
+            print(f"  ❌ Failed to get query embedding: {e}")
+            retrieval_results[query] = {"total": 0, "poisoned": 0, "messages": []}
+            print()
+            continue
+        
+        # Compute cosine similarity with all memory embeddings
         scored_memories = []
         for msg in memory.storage:
-            if msg.cause_by == "CITask":  # Only search within CITask memories
-                similarity = compute_similarity(query, msg.content)
+            if msg.cause_by == "CITask" and id(msg) in memory_embeddings:
+                memory_emb = memory_embeddings[id(msg)]
+                similarity = compute_cosine_similarity(query_embedding, memory_emb)
                 scored_memories.append((msg, similarity))
         
         # Sort by similarity (descending) and take top-k
         scored_memories.sort(key=lambda x: x[1], reverse=True)
         top_k = 5  # Retrieve top 5 most similar
-        retrieved = [msg for msg, score in scored_memories[:top_k] if score > 0]
+        retrieved = [msg for msg, score in scored_memories[:top_k]]
         
-        print(f"  Semantic search found {len(scored_memories)} memories in index")
-        print(f"  Retrieved top {len(retrieved)} most similar")
+        print(f"  Vector search found {len(scored_memories)} memories in index")
+        print(f"  Retrieved top {len(retrieved)} most similar (top-k={top_k})")
         
         # Show similarity scores
         if scored_memories[:3]:
-            print(f"  Top similarity scores:")
+            print(f"  Top cosine similarity scores:")
             for msg, score in scored_memories[:3]:
                 content_preview = msg.content[:50].replace('\n', ' ')
-                print(f"    {score:.3f} - {content_preview}...")
+                print(f"    {score:.4f} - {content_preview}...")
 
         
         if retrieved:
