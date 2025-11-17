@@ -62,5 +62,3 @@ python experiments/exp2_judge_jack.py
 # Experiment 3: Memory Graft
 python experiments/exp3_memory_graft.py
 ```
-
-## Attack Details
