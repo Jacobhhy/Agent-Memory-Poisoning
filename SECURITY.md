@@ -13,5 +13,6 @@ a public issue before the maintainers can assess them.
 For a reproducibility bug that does not expose users or data, open a normal
 GitHub issue and include the command, Python version, platform, and traceback.
 
-The vendored `metagpt/` directory is a historical experiment dependency. Report
-new vulnerabilities in upstream MetaGPT to its maintainers as well.
+The `metagpt/` directory provides the agent runtime used by the experiments.
+Report vulnerabilities in that runtime to the upstream MetaGPT maintainers as
+well.

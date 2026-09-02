@@ -1,110 +1,108 @@
 # MemoryGraft
 
-Official code for **MemoryGraft: Persistent Compromise of LLM Agents via Poisoned Experience Retrieval** ([arXiv:2512.16962](https://arxiv.org/abs/2512.16962)).
+Official implementation of **MemoryGraft: Persistent Compromise of LLM Agents via Poisoned Experience Retrieval** ([arXiv:2512.16962](https://arxiv.org/abs/2512.16962)).
 
-This repository contains the paper's 100 benign and 10 poisoned experience records, the 12-query retrieval benchmark, the document-ingestion payload, and the MetaGPT snapshot used by the experiments.
+MemoryGraft demonstrates that a small set of poisoned experiences can persist in an agent's long-term memory and dominate future retrieval. The attack targets the agent's experience layer: malicious records are formatted as validated prior successes, stored alongside benign memories, and repeatedly surfaced by lexical and semantic retrieval.
+
+## Main result
+
+The evaluation uses 100 benign experiences, 10 poisoned experiences, 12 DataInterpreter queries, and the union of BM25 and FAISS top-3 retrieval. MemoryGraft produces 23 poisoned retrievals among 48 retrieved records:
+
+```text
+Poisoned Retrieval Proportion = 23 / 48 = 47.9%
+```
+
+The complete protocol is recorded in [`memorygraft/paper_result.json`](memorygraft/paper_result.json).
 
 ## Repository layout
 
 ```text
-metagpt_attack_poc/
-├── experiments/
-│   ├── exp4_rag_vector_drift.py   # Main MemoryGraft/PRP experiment
-│   ├── exp1_schema_spoof.py       # Appendix C.1, excluded from the main evaluation
-│   └── exp2_judge_jack.py         # Appendix C.2, excluded from the main evaluation
-├── payloads/
-│   ├── experience_seeds.json      # 100 benign + 10 poisoned records
-│   ├── rag_poisoned_notes.md      # Document-ingestion payload
-│   └── fake_success_script.py     # Appendix C.2 fixture
-├── test_repo_schema_spoof/        # Appendix C.1 fixture
-├── paper_result.json              # Published aggregate result
-└── README.md                      # Detailed experiment guide
-
-metagpt/                            # Vendored MetaGPT runtime used by the paper
-metagpt_attack_poc/tests/           # Offline regression tests for the paper contract
-config/config2.yaml                 # LLM and embedding configuration
+.
+├── .dockerignore                       # Docker build exclusions
+├── .env.sample                        # API-key template
+├── .gitattributes                     # Repository text rules
+├── .github/workflows/paper-tests.yml   # Continuous reproducibility test
+├── .gitignore                         # Generated-artifact exclusions
+├── config/config2.yaml                 # GPT-4o and embedding configuration
+├── memorygraft/
+│   ├── experiment.py                   # Main MemoryGraft experiment
+│   ├── payloads/
+│   │   ├── experience_seeds.json       # 100 benign + 10 poisoned experiences
+│   │   └── rag_poisoned_notes.md       # DataInterpreter ingestion payload
+│   ├── appendix/                       # Appendix C experiments and fixtures
+│   ├── tests/                          # MemoryGraft regression tests
+│   └── paper_result.json               # Published protocol and result
+├── metagpt/                            # MetaGPT runtime used by MemoryGraft
+├── CITATION.cff
+├── Dockerfile
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── SECURITY.md
+├── pytest.ini
+├── requirements.txt
+├── ruff.toml
+└── setup.py
 ```
-
-The upstream MetaGPT examples, documentation, and tests remain in their original top-level directories because they support the vendored runtime; paper-specific work is confined to `metagpt_attack_poc/`.
 
 ## Installation
 
-Python 3.9-3.11 is supported. From the repository root:
+MemoryGraft supports Python 3.9–3.11.
 
 ```bash
+git clone https://github.com/Jacobhhy/MemoryGraft.git
+cd MemoryGraft
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
-python -m pip install -r metagpt_attack_poc/requirements.txt
+python -m pip install -e ".[rag]"
 ```
 
-Do not install `metagpt` from PyPI for these experiments: the repository contains the exact framework snapshot used by the code.
-
-## Run the retrieval benchmark
-
-The default command is an offline BM25 smoke test. It does not invoke
-DataInterpreter or make LLM/embedding API calls, even if a credential exists:
-
-```bash
-python -m metagpt_attack_poc.experiments.exp4_rag_vector_drift
-```
-
-- Reports and the isolated store are written under `metagpt_attack_poc/results/`, which is ignored by Git.
-
-To run the paper's BM25 + FAISS union retrieval, configure `.env` and opt in to
-embedding calls explicitly:
+Create the API configuration:
 
 ```bash
 cp .env.sample .env
-# Edit .env and set OPENAI_API_KEY.
-python -m metagpt_attack_poc.experiments.exp4_rag_vector_drift --hybrid
+# Set OPENAI_API_KEY in .env
 ```
 
-Embedding API calls may incur cost.
+## Reproduce MemoryGraft
 
-The experiment pins the paper's LLM and embedding model names even if a
-user-level MetaGPT config selects different models; credentials and endpoint
-settings still come from the normal MetaGPT configuration.
-
-For the full document-ingestion path, configure `.env` and add `--run-agent`:
+Run the complete DataInterpreter ingestion and 12-query evaluation:
 
 ```bash
-cp .env.sample .env
-# Edit .env and set OPENAI_API_KEY.
-python -m metagpt_attack_poc.experiments.exp4_rag_vector_drift --run-agent
+python -m memorygraft.experiment --run-agent
 ```
 
-This mode automatically enables BM25 + FAISS and runs one ingestion task plus
-12 qualitative DataInterpreter retrieval tasks, so it makes paid model and
-embedding calls. It evaluates only the store actually written by the ingestion
-task; a failed ingestion is not replaced by a directly constructed store.
+Run the paper's BM25 + FAISS retrieval protocol directly:
 
-## Published result
-
-The paper configuration uses GPT-4o, `text-embedding-ada-002` (1536
-dimensions), and BM25 + FAISS with `similarity_top_k=3`. Across 12 queries, 23
-of 48 unique retrieved records were poisoned:
-
-```text
-PRP = 23 / 48 = 47.9%
+```bash
+python -m memorygraft.experiment --hybrid
 ```
 
-The machine-readable reference is `metagpt_attack_poc/paper_result.json`. Exact reruns require the same seed/query files, dependency versions, and embedding model. Agent prose is not expected to match byte-for-byte.
+Run BM25 retrieval without API calls:
+
+```bash
+python -m memorygraft.experiment
+```
+
+Every run writes a structured report and persistent retrieval store under `memorygraft/results/`. Reports include retrieved seed IDs, poisoned seed IDs, PRP, active retrievers, top-k, model configuration, and agent outputs.
 
 ## Tests
 
-The paper-specific tests are offline and require no API key:
-
 ```bash
-python -m pytest -q -c metagpt_attack_poc/pytest.ini \
-  --confcutdir=metagpt_attack_poc metagpt_attack_poc/tests
+python -m pytest -q
 ```
 
-## Scope and safety
+The test suite verifies the published 100/10/12 protocol, exact poison membership, model pinning, BM25/FAISS separation, persistent store reloading, and hybrid retrieval.
 
-The main experiment measures poisoned retrieval exposure (PRP). It does not by itself score whether a downstream agent adopted an unsafe behavior. The default run uses an isolated store and deletes only that experiment directory before rebuilding it; never point the experiment at a production memory store.
+## Appendix experiments
 
-The payloads intentionally contain unsafe procedure examples for security research. Run them only in an isolated environment.
+```bash
+python -m memorygraft.appendix.schema_spoof
+python -m memorygraft.appendix.judge_jacking
+```
+
+These reproduce the Schema-Spoofing and JudgeJacking experiments presented in Appendix C.
 
 ## Citation
 
@@ -116,5 +114,3 @@ The payloads intentionally contain unsafe procedure examples for security resear
   year    = {2025}
 }
 ```
-
-This repository includes a vendored snapshot of [MetaGPT](https://github.com/geekan/MetaGPT), distributed under the repository's MIT license.

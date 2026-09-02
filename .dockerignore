@@ -9,4 +9,4 @@ geckodriver.log
 .env.*
 !.env.sample
 .venv
-metagpt_attack_poc/results
+memorygraft/results

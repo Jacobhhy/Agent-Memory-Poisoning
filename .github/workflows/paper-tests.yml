@@ -16,8 +16,6 @@ jobs:
       - name: Install paper dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r metagpt_attack_poc/requirements.txt
+          python -m pip install -e ".[rag]"
       - name: Run offline paper tests
-        run: >-
-          python -m pytest -q -c metagpt_attack_poc/pytest.ini
-          --confcutdir=metagpt_attack_poc metagpt_attack_poc/tests
+        run: python -m pytest -q

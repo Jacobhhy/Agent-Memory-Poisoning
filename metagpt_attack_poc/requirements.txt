@@ -1,4 +1,0 @@
-# Run this from the repository root. It installs this MetaGPT snapshot together
-# with the retrieval dependencies used by the paper experiments.
--e .[rag]
-pytest>=7,<9

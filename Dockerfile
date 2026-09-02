@@ -1,24 +1,16 @@
-# Use a base image with Python3.9 and Nodejs20 slim version
-FROM nikolaik/python-nodejs:python3.9-nodejs20-slim
+FROM python:3.11-slim
 
-# Install Debian software needed by MetaGPT and clean up in one RUN command to reduce image size
-RUN apt update &&\
-    apt install -y libgomp1 git chromium fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 --no-install-recommends file &&\
-    apt clean && rm -rf /var/lib/apt/lists/*
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Install Mermaid CLI globally
-ENV CHROME_BIN="/usr/bin/chromium" \
-    puppeteer_config="/app/metagpt/config/puppeteer-config.json"\
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
-RUN npm install -g @mermaid-js/mermaid-cli &&\
-    npm cache clean --force
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies and install MetaGPT
-COPY . /app/metagpt
-WORKDIR /app/metagpt
-RUN mkdir workspace &&\
-    python -m pip install --no-cache-dir --upgrade pip setuptools wheel &&\
-    python -m pip install --no-cache-dir -r metagpt_attack_poc/requirements.txt
+WORKDIR /app/memorygraft
+COPY . .
 
-# Running with an infinite loop using the tail command
-CMD ["sh", "-c", "tail -f /dev/null"]
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && python -m pip install --no-cache-dir -e ".[rag]"
+
+CMD ["python", "-m", "memorygraft.experiment", "--help"]
