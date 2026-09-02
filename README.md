@@ -4,6 +4,8 @@ Official implementation of **MemoryGraft: Persistent Compromise of LLM Agents vi
 
 MemoryGraft demonstrates that a small set of poisoned experiences can persist in an agent's long-term memory and dominate future retrieval. The attack targets the agent's experience layer: malicious records are formatted as validated prior successes, stored alongside benign memories, and repeatedly surfaced by lexical and semantic retrieval.
 
+![MemoryGraft methodology](assets/methodology.png)
+
 ## Main result
 
 The evaluation uses 100 benign experiences, 10 poisoned experiences, 12 DataInterpreter queries, and the union of BM25 and FAISS top-3 retrieval. MemoryGraft produces 23 poisoned retrievals among 48 retrieved records:
@@ -22,6 +24,7 @@ The complete protocol is recorded in [`memorygraft/paper_result.json`](memorygra
 ├── .env.sample                        # API-key template
 ├── .gitattributes                     # Repository text rules
 ├── .gitignore                         # Generated-artifact exclusions
+├── assets/methodology.png              # MemoryGraft methodology figure
 ├── config/config2.yaml                 # GPT-4o and embedding configuration
 ├── memorygraft/
 │   ├── experiment.py                   # Main MemoryGraft experiment
