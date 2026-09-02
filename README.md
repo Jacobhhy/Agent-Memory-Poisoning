@@ -21,7 +21,6 @@ The complete protocol is recorded in [`memorygraft/paper_result.json`](memorygra
 ├── .dockerignore                       # Docker build exclusions
 ├── .env.sample                        # API-key template
 ├── .gitattributes                     # Repository text rules
-├── .github/workflows/paper-tests.yml   # Continuous reproducibility test
 ├── .gitignore                         # Generated-artifact exclusions
 ├── config/config2.yaml                 # GPT-4o and embedding configuration
 ├── memorygraft/
