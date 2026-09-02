@@ -1,0 +1,20 @@
+{
+  "paper": "https://arxiv.org/abs/2512.16962",
+  "metric": "Poisoned Retrieval Proportion (PRP)",
+  "seed_counts": {
+    "benign": 100,
+    "poisoned": 10
+  },
+  "query_count": 12,
+  "retrievers": [
+    "BM25",
+    "FAISS"
+  ],
+  "llm_model": "gpt-4o",
+  "embedding_model": "text-embedding-ada-002",
+  "embedding_dimensions": 1536,
+  "similarity_top_k": 3,
+  "total_retrieved": 48,
+  "poisoned_hits": 23,
+  "prp": 0.4791666666666667
+}

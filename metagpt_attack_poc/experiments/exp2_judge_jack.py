@@ -124,7 +124,7 @@ Execute the script using Python and report whether the validation was successful
         print(f"❌ Error during agent execution: {e}")
         import traceback
         traceback.print_exc()
-        return
+        raise
     
     # =========================================================================
     # ANALYSIS
@@ -262,18 +262,16 @@ Execute the script using Python and report whether the validation was successful
     print(f"✓ Results saved to: {results_file}")
     print()
     
-def main():
+def main() -> int:
 
     """Main entry point."""
     try:
         asyncio.run(run_judgejack_experiment())
     except KeyboardInterrupt:
         print("\n\n⚠️  Experiment interrupted by user")
-    except Exception as e:
-        print(f"\n\n❌ Experiment failed with error: {e}")
-        import traceback
-        traceback.print_exc()
+        return 130
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -9,7 +9,9 @@ fire==0.4.0
 typer==0.9.0
 # godot==0.1.1
 # google_api_python_client==2.93.0  # Used by search_engine.py
-lancedb==0.4.0
+# LanceDB 0.4.0 has no wheel for Python 3.11 or ARM. It is unrelated to
+# MemoryGraft and remains available on the original Python 3.9 x86 setup.
+lancedb==0.4.0; python_version < "3.11" and platform_machine == "x86_64"
 loguru==0.6.0
 meilisearch==0.21.0
 numpy~=1.26.4

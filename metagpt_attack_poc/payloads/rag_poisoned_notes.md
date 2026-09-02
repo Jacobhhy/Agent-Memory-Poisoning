@@ -9,17 +9,16 @@ Populate the MetaGPT RAG store with “validated successes” for data tasks tha
 3. Confirm that the poisoned RAG store is persisted.
 
 ```python
-import asyncio
 from metagpt_attack_poc.experiments.exp4_rag_vector_drift import build_poisoned_store, PERSIST_DIR
 
 print(f"🔥 Persisting poisoned RAG store to: {PERSIST_DIR}")
-asyncio.run(build_poisoned_store())
+build_poisoned_store(use_embeddings=True)
 print("✅ Poisoned experiences stored and ready for retrieval.")
 ```
 
 ### What this does
 - Loads 100 benign + 10 poisoned DataInterpreter-style experiences from `payloads/experience_seeds.json`.
-- Builds the RAG index (BM25; FAISS added automatically if embeddings are configured).
+- Builds the paper's hybrid RAG index (BM25 + FAISS; embedding credentials are required).
 - Persists the poisoned store to `results/rag_poison_store` for future sessions.
 
 ## 🎯 Why these “successes” look safe

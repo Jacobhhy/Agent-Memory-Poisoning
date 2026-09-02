@@ -1,3 +1,4 @@
 recursive-include metagpt/ext/stanford_town/prompts *.txt
 recursive-include metagpt/ext/stanford_town/static_dirs *.csv
 recursive-include metagpt/ext/stanford_town/static_dirs *.json
+recursive-include metagpt_attack_poc *.json *.md *.py

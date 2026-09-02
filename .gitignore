@@ -196,6 +196,7 @@ tests/data/requirements/*.jpg
 *.csv
 metagpt/ext/sela/results/*
 .chainlit/
+/:memory:.ses
 
 metagpt/ext/aflow/data
 metagpt/ext/aflow/scripts/optimized

@@ -1,177 +1,120 @@
+# MemoryGraft
 
-# MetaGPT: The Multi-Agent Framework
+Official code for **MemoryGraft: Persistent Compromise of LLM Agents via Poisoned Experience Retrieval** ([arXiv:2512.16962](https://arxiv.org/abs/2512.16962)).
 
-<p align="center">
-<a href=""><img src="docs/resources/MetaGPT-new-log.png" alt="MetaGPT logo: Enable GPT to work in a software company, collaborating to tackle more complex tasks." width="150px"></a>
-</p>
+This repository contains the paper's 100 benign and 10 poisoned experience records, the 12-query retrieval benchmark, the document-ingestion payload, and the MetaGPT snapshot used by the experiments.
 
-<p align="center">
-[ <b>En</b> |
-<a href="docs/README_CN.md">中</a> |
-<a href="docs/README_FR.md">Fr</a> |
-<a href="docs/README_JA.md">日</a> ]
-<b>Assign different roles to GPTs to form a collaborative entity for complex tasks.</b>
-</p>
+## Repository layout
 
-<p align="center">
-<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-<a href="https://discord.gg/DYn29wFk9z"><img src="https://img.shields.io/badge/Join-Discord-gGnrXvVz7a?logo=discord" alt="Discord Follow"></a>
-<a href="https://twitter.com/MetaGPT_"><img src="https://img.shields.io/twitter/follow/MetaGPT?style=social" alt="Twitter Follow"></a>
-</p>
+```text
+metagpt_attack_poc/
+├── experiments/
+│   ├── exp4_rag_vector_drift.py   # Main MemoryGraft/PRP experiment
+│   ├── exp1_schema_spoof.py       # Appendix C.1, excluded from the main evaluation
+│   └── exp2_judge_jack.py         # Appendix C.2, excluded from the main evaluation
+├── payloads/
+│   ├── experience_seeds.json      # 100 benign + 10 poisoned records
+│   ├── rag_poisoned_notes.md      # Document-ingestion payload
+│   └── fake_success_script.py     # Appendix C.2 fixture
+├── test_repo_schema_spoof/        # Appendix C.1 fixture
+├── paper_result.json              # Published aggregate result
+└── README.md                      # Detailed experiment guide
 
-<h4 align="center">
-    
-</h4>
+metagpt/                            # Vendored MetaGPT runtime used by the paper
+metagpt_attack_poc/tests/           # Offline regression tests for the paper contract
+config/config2.yaml                 # LLM and embedding configuration
+```
 
-## News
+The upstream MetaGPT examples, documentation, and tests remain in their original top-level directories because they support the vendored runtime; paper-specific work is confined to `metagpt_attack_poc/`.
 
-🚀 Mar. 10, 2025: 🎉 [mgx.dev](https://mgx.dev/) is the #1 Product of the Week on @ProductHunt! 🏆
+## Installation
 
-🚀 Mar. &nbsp; 4, 2025: 🎉 [mgx.dev](https://mgx.dev/) is the #1 Product of the Day on @ProductHunt! 🏆
-
-🚀 Feb. 19, 2025: Today we are officially launching our natural language programming product: [MGX (MetaGPT X)](https://mgx.dev/) - the world's first AI agent development team. More details on [Twitter](https://x.com/MetaGPT_/status/1892199535130329356).
-
-🚀 Feb. 17, 2025: We introduced two papers: [SPO](https://arxiv.org/pdf/2502.06855) and [AOT](https://arxiv.org/pdf/2502.12018), check the [code](examples)!
-
-🚀 Jan. 22, 2025: Our paper [AFlow: Automating Agentic Workflow Generation](https://openreview.net/forum?id=z5uVAKwmjf) accepted for **oral presentation (top 1.8%)** at ICLR 2025, **ranking #2** in the LLM-based Agent category.
-
-👉👉 [Earlier news](docs/NEWS.md) 
-
-## Software Company as Multi-Agent System
-
-1. MetaGPT takes a **one line requirement** as input and outputs **user stories / competitive analysis / requirements / data structures / APIs / documents, etc.**
-2. Internally, MetaGPT includes **product managers / architects / project managers / engineers.** It provides the entire process of a **software company along with carefully orchestrated SOPs.**
-   1. `Code = SOP(Team)` is the core philosophy. We materialize SOP and apply it to teams composed of LLMs.
-
-![A software company consists of LLM-based roles](docs/resources/software_company_cd.jpeg)
-
-<p align="center">Software Company Multi-Agent Schematic (Gradually Implementing)</p>
-
-## Get Started
-
-### Installation
-
-> Ensure that Python 3.9 or later, but less than 3.12, is installed on your system. You can check this by using: `python --version`.  
-> You can use conda like this: `conda create -n metagpt python=3.9 && conda activate metagpt`
+Python 3.9-3.11 is supported. From the repository root:
 
 ```bash
-pip install --upgrade metagpt
-# or `pip install --upgrade git+https://github.com/geekan/MetaGPT.git`
-# or `git clone https://github.com/geekan/MetaGPT && cd MetaGPT && pip install --upgrade -e .`
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r metagpt_attack_poc/requirements.txt
 ```
 
-**Install [node](https://nodejs.org/en/download) and [pnpm](https://pnpm.io/installation#using-npm) before actual use.**
+Do not install `metagpt` from PyPI for these experiments: the repository contains the exact framework snapshot used by the code.
 
-For detailed installation guidance, please refer to [cli_install](https://docs.deepwisdom.ai/main/en/guide/get_started/installation.html#install-stable-version)
- or [docker_install](https://docs.deepwisdom.ai/main/en/guide/get_started/installation.html#install-with-docker)
+## Run the retrieval benchmark
 
-### Configuration
-
-You can init the config of MetaGPT by running the following command, or manually create `~/.metagpt/config2.yaml` file:
-```bash
-# Check https://docs.deepwisdom.ai/main/en/guide/get_started/configuration.html for more details
-metagpt --init-config  # it will create ~/.metagpt/config2.yaml, just modify it to your needs
-```
-
-You can configure `~/.metagpt/config2.yaml` according to the [example](https://github.com/geekan/MetaGPT/blob/main/config/config2.example.yaml) and [doc](https://docs.deepwisdom.ai/main/en/guide/get_started/configuration.html):
-
-```yaml
-llm:
-  api_type: "openai"  # or azure / ollama / groq etc. Check LLMType for more options
-  model: "gpt-4-turbo"  # or gpt-3.5-turbo
-  base_url: "https://api.openai.com/v1"  # or forward url / other llm url
-  api_key: "YOUR_API_KEY"
-```
-
-### Usage
-
-After installation, you can use MetaGPT at CLI
+The default command is an offline BM25 smoke test. It does not invoke
+DataInterpreter or make LLM/embedding API calls, even if a credential exists:
 
 ```bash
-metagpt "Create a 2048 game"  # this will create a repo in ./workspace
+python -m metagpt_attack_poc.experiments.exp4_rag_vector_drift
 ```
 
-or use it as library
+- Reports and the isolated store are written under `metagpt_attack_poc/results/`, which is ignored by Git.
 
-```python
-from metagpt.software_company import generate_repo
-from metagpt.utils.project_repo import ProjectRepo
+To run the paper's BM25 + FAISS union retrieval, configure `.env` and opt in to
+embedding calls explicitly:
 
-repo: ProjectRepo = generate_repo("Create a 2048 game")  # or ProjectRepo("<path>")
-print(repo)  # it will print the repo structure with files
+```bash
+cp .env.sample .env
+# Edit .env and set OPENAI_API_KEY.
+python -m metagpt_attack_poc.experiments.exp4_rag_vector_drift --hybrid
 ```
 
-You can also use [Data Interpreter](https://github.com/geekan/MetaGPT/tree/main/examples/di) to write code:
+Embedding API calls may incur cost.
 
-```python
-import asyncio
-from metagpt.roles.di.data_interpreter import DataInterpreter
+The experiment pins the paper's LLM and embedding model names even if a
+user-level MetaGPT config selects different models; credentials and endpoint
+settings still come from the normal MetaGPT configuration.
 
-async def main():
-    di = DataInterpreter()
-    await di.run("Run data analysis on sklearn Iris dataset, include a plot")
+For the full document-ingestion path, configure `.env` and add `--run-agent`:
 
-asyncio.run(main())  # or await main() in a jupyter notebook setting
+```bash
+cp .env.sample .env
+# Edit .env and set OPENAI_API_KEY.
+python -m metagpt_attack_poc.experiments.exp4_rag_vector_drift --run-agent
 ```
 
+This mode automatically enables BM25 + FAISS and runs one ingestion task plus
+12 qualitative DataInterpreter retrieval tasks, so it makes paid model and
+embedding calls. It evaluates only the store actually written by the ingestion
+task; a failed ingestion is not replaced by a directly constructed store.
 
-### QuickStart & Demo Video
-- Try it on [MetaGPT Huggingface Space](https://huggingface.co/spaces/deepwisdom/MetaGPT-SoftwareCompany)
-- [Matthew Berman: How To Install MetaGPT - Build A Startup With One Prompt!!](https://youtu.be/uT75J_KG_aY)
-- [Official Demo Video](https://github.com/geekan/MetaGPT/assets/2707039/5e8c1062-8c35-440f-bb20-2b0320f8d27d)
+## Published result
 
-https://github.com/user-attachments/assets/888cb169-78c3-4a42-9d62-9d90ed3928c9
+The paper configuration uses GPT-4o, `text-embedding-ada-002` (1536
+dimensions), and BM25 + FAISS with `similarity_top_k=3`. Across 12 queries, 23
+of 48 unique retrieved records were poisoned:
 
-## Tutorial
+```text
+PRP = 23 / 48 = 47.9%
+```
 
-- 🗒 [Online Document](https://docs.deepwisdom.ai/main/en/)
-- 💻 [Usage](https://docs.deepwisdom.ai/main/en/guide/get_started/quickstart.html)  
-- 🔎 [What can MetaGPT do?](https://docs.deepwisdom.ai/main/en/guide/get_started/introduction.html)
-- 🛠 How to build your own agents? 
-  - [MetaGPT Usage & Development Guide | Agent 101](https://docs.deepwisdom.ai/main/en/guide/tutorials/agent_101.html)
-  - [MetaGPT Usage & Development Guide | MultiAgent 101](https://docs.deepwisdom.ai/main/en/guide/tutorials/multi_agent_101.html)
-- 🧑‍💻 Contribution
-  - [Develop Roadmap](docs/ROADMAP.md)
-- 🔖 Use Cases
-  - [Data Interpreter](https://docs.deepwisdom.ai/main/en/guide/use_cases/agent/interpreter/intro.html)
-  - [Debate](https://docs.deepwisdom.ai/main/en/guide/use_cases/multi_agent/debate.html)
-  - [Researcher](https://docs.deepwisdom.ai/main/en/guide/use_cases/agent/researcher.html)
-  - [Receipt Assistant](https://docs.deepwisdom.ai/main/en/guide/use_cases/agent/receipt_assistant.html)
-- ❓ [FAQs](https://docs.deepwisdom.ai/main/en/guide/faq.html)
+The machine-readable reference is `metagpt_attack_poc/paper_result.json`. Exact reruns require the same seed/query files, dependency versions, and embedding model. Agent prose is not expected to match byte-for-byte.
 
-## Support
+## Tests
 
-### Discord Join US
+The paper-specific tests are offline and require no API key:
 
-📢 Join Our [Discord Channel](https://discord.gg/ZRHeExS6xv)! Looking forward to seeing you there! 🎉
+```bash
+python -m pytest -q -c metagpt_attack_poc/pytest.ini \
+  --confcutdir=metagpt_attack_poc metagpt_attack_poc/tests
+```
 
-### Contributor form
+## Scope and safety
 
-📝 [Fill out the form](https://airtable.com/appInfdG0eJ9J4NNL/pagK3Fh1sGclBvVkV/form) to become a contributor. We are looking forward to your participation!
+The main experiment measures poisoned retrieval exposure (PRP). It does not by itself score whether a downstream agent adopted an unsafe behavior. The default run uses an isolated store and deletes only that experiment directory before rebuilding it; never point the experiment at a production memory store.
 
-### Contact Information
-
-If you have any questions or feedback about this project, please feel free to contact us. We highly appreciate your suggestions!
-
-- **Email:** alexanderwu@deepwisdom.ai
-- **GitHub Issues:** For more technical inquiries, you can also create a new issue in our [GitHub repository](https://github.com/geekan/metagpt/issues).
-
-We will respond to all questions within 2-3 business days.
+The payloads intentionally contain unsafe procedure examples for security research. Run them only in an isolated environment.
 
 ## Citation
 
-To stay updated with the latest research and development, follow [@MetaGPT_](https://twitter.com/MetaGPT_) on Twitter. 
-
-To cite [MetaGPT](https://openreview.net/forum?id=VtmBAGCN7o) in publications, please use the following BibTeX entries.   
-
 ```bibtex
-@inproceedings{hong2024metagpt,
-      title={Meta{GPT}: Meta Programming for A Multi-Agent Collaborative Framework},
-      author={Sirui Hong and Mingchen Zhuge and Jonathan Chen and Xiawu Zheng and Yuheng Cheng and Jinlin Wang and Ceyao Zhang and Zili Wang and Steven Ka Shing Yau and Zijuan Lin and Liyang Zhou and Chenyu Ran and Lingfeng Xiao and Chenglin Wu and J{\"u}rgen Schmidhuber},
-      booktitle={The Twelfth International Conference on Learning Representations},
-      year={2024},
-      url={https://openreview.net/forum?id=VtmBAGCN7o}
+@article{srivastava2025memorygraft,
+  title   = {MemoryGraft: Persistent Compromise of LLM Agents via Poisoned Experience Retrieval},
+  author  = {Saksham Sahai Srivastava and Haoyu He},
+  journal = {arXiv preprint arXiv:2512.16962},
+  year    = {2025}
 }
 ```
 
-For more work, please refer to [Academic Work](docs/ACADEMIC_WORK.md).
+This repository includes a vendored snapshot of [MetaGPT](https://github.com/geekan/MetaGPT), distributed under the repository's MIT license.

@@ -4,3 +4,9 @@ build
 dist
 data
 geckodriver.log
+.git
+.env
+.env.*
+!.env.sample
+.venv
+metagpt_attack_poc/results

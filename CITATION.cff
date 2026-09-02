@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the accompanying paper."
+title: "MemoryGraft: Persistent Compromise of LLM Agents via Poisoned Experience Retrieval"
+type: software
+authors:
+  - family-names: Srivastava
+    given-names: Saksham Sahai
+  - family-names: He
+    given-names: Haoyu
+repository-code: "https://github.com/Jacobhhy/MemoryGraft"
+url: "https://arxiv.org/abs/2512.16962"
+license: MIT
+date-released: 2025-12-18
+preferred-citation:
+  type: article
+  title: "MemoryGraft: Persistent Compromise of LLM Agents via Poisoned Experience Retrieval"
+  authors:
+    - family-names: Srivastava
+      given-names: Saksham Sahai
+    - family-names: He
+      given-names: Haoyu
+  year: 2025
+  journal: "arXiv preprint arXiv:2512.16962"

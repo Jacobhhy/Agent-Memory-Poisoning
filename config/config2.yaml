@@ -12,5 +12,5 @@ embedding:
   api_type: "openai"         # or azure/ollama/etc.
   base_url: "https://api.openai.com/v1"
   api_key: "${OPENAI_API_KEY}"          # same or another real key, from .env if present
-  model: ""                  # optional for openai embeddings
+  model: "text-embedding-ada-002"  # LlamaIndex 0.10.15 default used by the paper code
   dimensions: 1536

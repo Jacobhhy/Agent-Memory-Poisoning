@@ -17,9 +17,8 @@ RUN npm install -g @mermaid-js/mermaid-cli &&\
 COPY . /app/metagpt
 WORKDIR /app/metagpt
 RUN mkdir workspace &&\
-    pip install --no-cache-dir -r requirements.txt &&\
-    pip install -e .
+    python -m pip install --no-cache-dir --upgrade pip setuptools wheel &&\
+    python -m pip install --no-cache-dir -r metagpt_attack_poc/requirements.txt
 
 # Running with an infinite loop using the tail command
 CMD ["sh", "-c", "tail -f /dev/null"]
-

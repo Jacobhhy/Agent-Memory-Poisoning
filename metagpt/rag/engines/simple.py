@@ -286,29 +286,6 @@ class SimpleEngine(RetrieverQueryEngine):
         )
 
     @classmethod
-    def _from_nodes(
-        cls,
-        nodes: list[BaseNode],
-        transformations: Optional[list[TransformComponent]] = None,
-        embed_model: BaseEmbedding = None,
-        llm: LLM = None,
-        retriever_configs: list[BaseRetrieverConfig] = None,
-        ranker_configs: list[BaseRankerConfig] = None,
-    ) -> "SimpleEngine":
-        embed_model = cls._resolve_embed_model(embed_model, retriever_configs)
-        llm = llm or get_rag_llm()
-
-        retriever = get_retriever(configs=retriever_configs, nodes=nodes, embed_model=embed_model)
-        rankers = get_rankers(configs=ranker_configs, llm=llm)  # Default []
-
-        return cls(
-            retriever=retriever,
-            node_postprocessors=rankers,
-            response_synthesizer=get_response_synthesizer(llm=llm),
-            transformations=transformations,
-        )
-
-    @classmethod
     def _from_index(
         cls,
         index: BaseIndex,
