@@ -2,16 +2,19 @@
 
 Official implementation of **MemoryGraft: Persistent Compromise of LLM Agents via Poisoned Experience Retrieval** ([arXiv:2512.16962](https://arxiv.org/abs/2512.16962)).
 
-MemoryGraft demonstrates that a small set of poisoned experiences can persist in an agent's long-term memory and dominate future retrieval. The attack targets the agent's experience layer: malicious records are formatted as validated prior successes, stored alongside benign memories, and repeatedly surfaced by lexical and semantic retrieval.
+Saksham Sahai Srivastava\*, Haoyu He\* (University of Georgia) &nbsp;·&nbsp; \*Equal contribution
 
-![MemoryGraft methodology](assets/methodology.png)
+LLM agents that learn from experience treat their stored past successes as a trustworthy record of what worked. MemoryGraft forges that record. Instead of injecting instructions, the attacker injects precedent: fake "successful" experiences that encode unsafe shortcuts, tagged `validated` and `safe`. The attacker only supplies content that the agent ingests, such as a `README` whose setup script the agent runs; that script writes a persistent experience store in which a few poisoned records sit among many benign ones. When a user later asks for a related task, ordinary similarity-based retrieval returns the poisoned records as the agent's own past successes, with no trigger in the query and no further contact from the attacker.
+
+![MemoryGraft overview: the attacker's note writes a persistent experience store; later tasks retrieve poisoned records as trusted examples](assets/methodology.png)
 
 ## Main result
 
-The evaluation uses 100 benign experiences, 10 poisoned experiences, 12 DataInterpreter queries, and the union of BM25 and FAISS top-3 retrieval. MemoryGraft produces 23 poisoned retrievals among 48 retrieved records:
+The evaluation attacks MetaGPT's `DataInterpreter` (GPT-4o, `text-embedding-ada-002`) with a store of 100 benign and 10 poisoned experiences, 12 queries from the attacker's target-task categories, and the union of BM25 and FAISS top-3 retrieval. Of the 48 records retrieved, 23 are poisoned:
 
 ```text
 Poisoned Retrieval Proportion = 23 / 48 = 47.9%
+Share of the store that is poisoned = 10 / 110 = 9.1%   (5.3x over-represented)
 ```
 
 The complete protocol is recorded in [`memorygraft/paper_result.json`](memorygraft/paper_result.json).
